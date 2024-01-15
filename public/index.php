@@ -18,16 +18,19 @@ $auctionTable = new DatabaseTable($pdo, 'auction', 'aucId');
 $userTable = new DatabaseTable($pdo, 'users', 'userId');
 $biddingTable = new DatabaseTable($pdo, 'bidding', 'bidId');
 $userAuctionTable = new DatabaseTable($pdo, 'UserAuction', 'aucID');
+$lotTable = new DatabaseTable($pdo, 'lot', 'lotId');
 
 // View Table
 $auction_catTable = new DatabaseTable($pdo, 'auction_cat', 'aucId');
 $auction_userTable = new DatabaseTable($pdo, 'user_auction', 'userId');
 $user_bid_categoryTable = new DatabaseTable($pdo, 'user_bid_category', 'bidId');
 $reviewAuctionTable = new DatabaseTable($pdo, 'review_auction', 'userId');
+$lot_userTable = new DatabaseTable($pdo, 'lot_user', 'lotId');
+$lot_auctionTable = new DatabaseTable($pdo, 'lot_auction', 'lotId');
 
 $controllers = [];
-$controllers['admin'] = new \Controllers\AdminController($categoryTable, $auctionTable, $auction_catTable, $userTable, $biddingTable, $auction_userTable, $user_bid_categoryTable, $reviewAuctionTable);
-$controllers['user'] = new \Controllers\UserController($categoryTable, $auctionTable, $auction_catTable, $userTable, $auction_userTable, $user_bid_categoryTable, $biddingTable, $userAuctionTable);
+$controllers['admin'] = new \Controllers\AdminController($categoryTable, $auctionTable, $auction_catTable, $userTable, $biddingTable, $auction_userTable, $user_bid_categoryTable, $reviewAuctionTable, $lotTable, $lot_userTable, $lot_auctionTable);
+$controllers['user'] = new \Controllers\UserController($categoryTable, $auctionTable, $auction_catTable, $userTable, $auction_userTable, $user_bid_categoryTable, $biddingTable, $userAuctionTable, $lot_auctionTable, $lotTable);
 
 $route = ltrim(explode('?', $_SERVER['REQUEST_URI'])[0], '/');
 

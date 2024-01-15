@@ -7,7 +7,7 @@ $isSeller = $isLoggedInOrRegistered && $_SESSION['userDetails']['checkAdmin'] ==
 require '../database.php';
 
 
-$date = strtotime($auction['endDate']);
+$date = strtotime($auctions['endDate']);
 $left_time = $date - time();
 
 $day = floor($left_time / (60 * 60 * 24));
@@ -33,11 +33,11 @@ $isAuctionExpired = $left_time <= 0;
 
 ?>
 
-<div class="intro-section" style="background-image: url('<?php echo '../img/auctions/' . $auctions['img']; ?>');">
+<div class="intro-section" style="background-image: url('<?php echo '../img/lots/' . $auctions['lotimage']; ?>');">
   <div class="container">
     <div class="row align-items-center justify-content-center">
       <div class="col-md-7 mx-auto text-center aos-init aos-animate" data-aos="fade-up">
-        <h1><?php echo $auctions['title'] ?></h1>
+        <h1><?php echo $auctions['lotname'] ?></h1>
         <p>
           <a href="#" class="btn btn-primary">Bid Now</a>
         </p>
@@ -52,26 +52,26 @@ $isAuctionExpired = $left_time <= 0;
       <div class="col-lg-3 order-lg-2">
         <div class="side-box mb-4">
           <?php
-          $aucId = $auction['aucId'];
-          $sql1 = "SELECT COUNT(*) as totalBids FROM bidding WHERE auctionId = :aucId";
+          $aucId = $auction['lotId'];
+          $sql1 = "SELECT COUNT(*) as totalBids FROM bidding WHERE lotId = :lotId";
           $query1 = $pdo->prepare($sql1);
-          $query1->bindParam(':aucId', $aucId, PDO::PARAM_INT);
+          $query1->bindParam(':lotId', $aucId, PDO::PARAM_INT);
           $query1->execute();
           $result1 = $query1->fetch(PDO::FETCH_OBJ);
           $totalBids = $result1->totalBids;
 
           ?>
-          <p><strong>Artist/Owner: </strong><?php echo $auction_users['firstname'] . ' ' . $auction_users['lastname']; ?></p>
+          <p><strong>Artist/Owner: </strong><?php echo $auctions['firstname'] . ' ' . $auctions['lastname']; ?></p>
 
           <p>Bidding Ends:<br><strong class="text-black"><?php echo $showTime ?></strong></p>
           <p>
-            Highest Bid: <strong class="text-black"><?php echo isset($highestBid) ? '$' . number_format($highestBid) : 'No bids yet'; ?></strong>
+            Highest Bid: <strong class="text-black"><?php echo isset($highestBid) ? '£' . number_format($highestBid) : 'No bids yet'; ?></strong>
           </p>
           <form action="/user/bid" enctype="multipart/form-data" method="POST" onsubmit="return validateBid()">
-            <input type="hidden" name="auctionId" value="<?php echo $aucId; ?>" />
+            <input type="hidden" name="lotId" value="<?php echo $aucId; ?>" />
             <div class="mb-4">
               <input type="number" id="bidAmountInput" name="bidamount" class="form-control mb-2" placeholder="Enter bid amount" required>
-              <small class="text-muted">Bid must be greater than <?php echo '$' . number_format($highestBid); ?></small>
+              <small class="text-muted">Bid must be greater than <?php echo '£' . number_format($highestBid); ?></small>
               <?php if (!$isAuctionExpired) : ?>
                 <input type="submit" name="submit" value="Submit a Bid" class="btn btn-block" id="submitButton" disabled />
               <?php else : ?>
@@ -87,10 +87,14 @@ $isAuctionExpired = $left_time <= 0;
       </div>
 
       <div class="col-lg-8 pr-lg-5">
-        <img width="693.986px" src="<?php echo '../img/auctions/' . $auctions['img']; ?>" alt="Auction Image">
-        <p></p>
-        <p><?php echo $auctions['description']; ?></p>
-        <h2 class="my-4">Bidders</h2>
+        <img width="693.986px" src="<?php echo '../img/lots/' . $auctions['lotimage']; ?>" alt="Auction Image"><br>
+        <h1>Lot Details</h1><br>
+        <h3>Description</h3>
+        <p><?php echo $auctions['lotdesc']; ?></p>
+        <p>
+          Estimated Price: <strong class="text-black"><?php echo '£' . $auctions['price']; ?></strong>
+        </p>
+        <h5 class="my-4">Bidders</h5>
         <ul class="list-unstyled bidders">
           <?php $rowNum = 1; ?>
           <?php foreach ($bidders as $bidder) : ?>
@@ -101,7 +105,7 @@ $isAuctionExpired = $left_time <= 0;
                   <span><?php echo htmlspecialchars($bidder['firstname'] . " " . $bidder['lastname'], ENT_QUOTES, 'UTF-8'); ?></span>
                 </div>
               </div>
-              <span class="price"><strong><?php echo '$' . $bidder['highestBid']; ?></strong></span>
+              <span class="price"><strong><?php echo '£' . $bidder['highestBid']; ?></strong></span>
             </li>
             <?php $rowNum++; ?>
           <?php endforeach; ?>

@@ -37,11 +37,8 @@
                                         <input type="text" name="address" class="form-control" value="<?php echo $user['address'] ?>">
                                     </div>
                                     <div class="col-md-6 form-group">
-                                        <label for="passlogin">Change to Seller</label>
-                                        <select class="form-control" name="checkAdmin" >
-                                            <option selected="">USER</option>
-                                            <option>SELLER</option>
-                                        </select>
+                                        <label for="useremail">UserType</label>
+                                        <input type="text" name="checkAdmin" class="form-control" value="ADMIN" readonly>
                                     </div>
                                 </div>
                                 <div class="row">

@@ -15,7 +15,7 @@
                                     
                                 </td>
                                 <td>
-                                    <p><strong>Auction Item: </strong> <?php echo htmlspecialchars($auction['title'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <p><strong>Auction Name: </strong> <?php echo htmlspecialchars($auction['title'], ENT_QUOTES, 'UTF-8'); ?></p>
                                     <p><strong>Item Category: </strong> <?php echo htmlspecialchars($auction['catname'], ENT_QUOTES, 'UTF-8'); ?></p>
                                     <p><strong>Item Description: </strong><?php echo limitWords(htmlspecialchars($auction['description'], ENT_QUOTES, 'UTF-8'), 10); ?></p>                                </td>
                                 <td>

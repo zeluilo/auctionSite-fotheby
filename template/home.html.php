@@ -150,9 +150,10 @@
                                 });
 
                                 // Limit the auctions to 4
-                                $limitedUsers = array_slice($users, 0, 5);
+                                $limitedUsers = array_slice($users, 0, 4);
                                 ?>
                                 <?php foreach ($limitedUsers as $user) : ?>
+                                    <?php if ($user['checkAdmin'] === 'USER' || $user['checkAdmin'] === 'SELLER'): ?>
                                     <?php $name = $user['firstname'] . ' ' . $user['lastname'] ?>
                                     <tr>
                                         <td><?php echo $rowNum; ?></td>
@@ -163,6 +164,7 @@
                                         <td><a href="edituser?userId=<?php echo $user['userId'] ?>"><i class="fas fa-eye"></i></a></td>
                                     </tr>
                                     <?php $rowNum++; ?>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                                 <?php if (empty($limitedUsers)) : ?>
                                     <tr>
@@ -181,7 +183,7 @@
             <div class="card shadow mb-4">
                 <!-- Card Header - Dropdown -->
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Recently Added Auctions</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Recently Added Lots</h6>
                 </div>
                 <!-- Card Body -->
                 <div>
@@ -199,7 +201,7 @@
                             $rowNum = 1;
                             // Sort the reviewAuctions by date in descending order
                             usort($reviewAuctions, function ($a, $b) {
-                                return strtotime($b['auctionDateCreate']) - strtotime($a['auctionDateCreate']);
+                                return strtotime($b['datecreate']) - strtotime($a['datecreate']);
                             });
 
                             // Limit the auctions to 4
@@ -210,8 +212,8 @@
                                 <tr>
                                     <td><?php echo $rowNum; ?></td>
                                     <td><?php echo htmlspecialchars($name, ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars($reviewAuction['title'], ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><a href="reviewauction?aucId=<?php echo $reviewAuction['auctionId'] ?>"><i class="fas fa-eye"></i></a></td>
+                                    <td><?php echo htmlspecialchars($reviewAuction['lotname'], ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><a href="editlot?lotId=<?php echo $reviewAuction['lotId'] ?>"><i class="fas fa-eye"></i></a></td>
                                 </tr>
                                 <?php $rowNum++; ?>
                             <?php endforeach; ?>

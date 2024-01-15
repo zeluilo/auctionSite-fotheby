@@ -1,13 +1,13 @@
 <!-- Begin Page Content -->
 <div class="container-fluid">
     <!-- Page Heading -->
-    <h1 class="h3 mb-4 text-gray-800">Add Auction</h1>
+    <h1 class="h3 mb-4 text-gray-800">Edit Auction</h1>
     <div class="col-xl-114">
         <div class="card shadow mb-4">
             <!-- Card Header - Dropdown -->
             <div
                 class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">Add An Auction</h6>
+                <h6 class="m-0 font-weight-bold text-primary">Edit An Auction</h6>
                 <div class="dropdown no-arrow">
                     <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -27,7 +27,7 @@
                                 <div class="account-settings">
                                     <div class="user-profile">
                                         <div class="user-avatar">
-                                            <p><strong>Auction Item: </strong> <?php echo $auction['title'] ?></p>
+                                            <p><strong>Auction Name: </strong> <?php echo $auction['title'] ?></p>
                                             <img width="410px" height="250" src="<?php echo '../img/auctions/' . $auction['img']; ?>" alt="Auction Image">
                                         </div>
                                     </div>
@@ -56,7 +56,7 @@
                                             </div>
                                             <div class="col-xl-12">
                                                 <div class="form-group">
-                                                    <label >Auction Title</label>
+                                                    <label >Auction Name</label>
                                                     <input type="text" name="title" class="form-control" value="<?php echo $auction['title'] ?>">
                                                 </div>
                                             </div>
@@ -66,12 +66,20 @@
                                                     <textarea class="form-control" name="description" required><?php echo $auction['description']; ?></textarea>
                                                 </div>
                                             </div>
-                                            <div class="col-xl-12">
+                                            <div class="row">
+                                            <div class="col-xl-6">
                                                 <div class="form-group">
-                                                    <label>Expiry Date</label>
-                                                    <input class="form-control" type="date" name="endDate" value="<?php echo date('Y-m-d', strtotime($auction['endDate'])) ?>" min="<?php echo date('Y-m-d'); ?>">
+                                                    <label>Start Date</label>
+                                                    <input class="form-control" type="datetime-local" name="startDate" value="<?php echo date('Y-m-d\TH:i', strtotime($auction['startDate'])) ?>" min="<?php echo date('Y-m-d\TH:i'); ?>">
                                                 </div>
                                             </div>
+                                            <div class="col-xl-6">
+                                                <div class="form-group">
+                                                    <label>Expiry Date</label>
+                                                    <input class="form-control" type="datetime-local" name="endDate" value="<?php echo date('Y-m-d\TH:i', strtotime($auction['endDate'])) ?>" min="<?php echo date('Y-m-d\TH:i'); ?>">
+                                                </div>
+                                            </div>
+                                            </div> 
                                             <div class="row">
                                                 <div class="col-md-6 form-group">
                                                     <label for="useremail">Item Category</label>
@@ -82,10 +90,6 @@
                                                             </option>
                                                         <?php endforeach; ?>
                                                     </select>                                                
-                                                </div>
-                                                <div class="col-md-6 form-group">
-                                                    <label>Estimated Price</label>
-                                                    <input class="form-control" type="number" name="price" value="<?php echo $auction['price']; ?>">
                                                 </div>
                                             </div>
                                         </div>
@@ -120,4 +124,46 @@
             </section>
         </div>
     </div>
+    <hr class="sidebar-divider">
+            <div
+                class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Lots in this Auction</h6>
+            </div>
+            <div>
+                <table class="table">
+                    <tbody>
+                        <?php foreach ($lots as $lot): ?>
+                            <tr>
+                                <td>
+                                    <img width="150px" height="150" src="<?php echo '../img/lots/' . $lot['lotimage']; ?>" alt="Auction Image">
+                                    
+                                </td>
+                                <td>
+                                    <p><strong>Lot Item: </strong> <?php echo htmlspecialchars($lot['lotname'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <p><strong>Item Description: </strong><?php echo limitWords(htmlspecialchars($lot['lotdesc'], ENT_QUOTES, 'UTF-8'), 20); ?></p>                                
+                                <a href="editlot?lotId=<?php echo $lot['lotId'] ?>">Edit Item Info</a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <?php if (count($lots) === 0): ?>
+                            <tr>
+                                <td colspan="6">No Lot Items</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
 </div>
+
+<?php
+// Function to limit the number of words
+function limitWords($text, $limit) {
+    $words = explode(" ", $text);
+    $limitedWords = array_slice($words, 0, $limit);
+    $limitedText = implode(" ", $limitedWords);
+    if (count($words) > $limit) {
+        $limitedText .= '...';
+    }
+    return $limitedText;
+}
+?>

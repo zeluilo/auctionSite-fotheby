@@ -15,7 +15,7 @@
         <div class="row justify-content-center">
             <div class="col-lg-12">
                 <form action="" method="post" enctype="multipart/form-data" class="user">
-                    <h2 class="mb-4 text-black"><strong>Add an Auction</strong></h2>
+                    <h2 class="mb-4 text-black"><strong></strong></h2>
                     <div class="row">
                         <div class="col-md-6 form-group">
                             <label for="useremail">Item Title</label>

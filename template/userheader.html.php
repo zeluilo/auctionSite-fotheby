@@ -29,7 +29,7 @@
                         <li class="has-children">
                           <?= htmlspecialchars($userDetails['firstname'] . ' ' . $userDetails['lastname']) ?>
                           <ul class="dropdown">
-                            <li><a href="#">Profile</a></li>
+                            <li><a href="/user/edituser?userId=<?php echo $userDetails['userId'] ?>">Profile</a></li>
                             <?php if ($isSeller) : ?>
                             <li><a href="/user/addauction">Add An Auction</a></li>
                             <?php else : ?>
@@ -71,11 +71,10 @@
         <li class="has-children">
           <a href="/user/catalogue">Serivces</a>
           <ul class="dropdown">
-            <li><a href="/user/catalogue">Buy</a></li>
             <li><a href="/user/catalogue">Submit a Bid</a></li>
           </ul>
         </li>
-        <li><a href="contact.html">Contact</a></li>
+        <li><a href="/user/contact">Contact</a></li>
       </ul>
     </div>
   </nav>

@@ -35,23 +35,5 @@
         </a>   
     </div>
 
-    <div class="border p-4 rounded mb-4">
-        <div class="mb-4">
-            <h3 class="mb-3 h6 text-uppercase text-black d-block">Filter by Price</h3>
-        </div>
-        <a href="?sort=0-350" class="d-flex color-item align-items-center">
-            <span class="text-black">£0-£350</span>
-        </a>
-        <a href="?sort=350-650" class="d-flex color-item align-items-center">
-            <span class="text-black">£350-£650</span>
-        </a>
-        <a href="?sort=650-1000" class="d-flex color-item align-items-center">
-            <span class="text-black">£650-£1000</span>
-        </a>
-        <a href="?sort=1000" class="d-flex color-item align-items-center">
-            <span class="text-black">£1000+</span>
-        </a>       
-    </div>
-
 </div>
 </div>

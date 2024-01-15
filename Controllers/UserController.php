@@ -13,10 +13,12 @@ class UserController
     private $user_bid_categoryTable;
     private $auction_userTable;
     private $biddingTable;
-
     private $userAuctionTable;
+    private $lot_auctionTable;
+    private $lotTable;
 
-    public function __construct($categoryTable, $auctionTable, $auction_catTable, $userTable, $auction_userTable, $user_bid_categoryTable, $biddingTable, $userAuctionTable)
+
+    public function __construct($categoryTable, $auctionTable, $auction_catTable, $userTable, $auction_userTable, $user_bid_categoryTable, $biddingTable, $userAuctionTable, $lot_auctionTable, $lotTable)
     {
         $this->categoryTable = $categoryTable;
         $this->auctionTable = $auctionTable;
@@ -26,7 +28,8 @@ class UserController
         $this->auction_userTable = $auction_userTable;
         $this->biddingTable = $biddingTable;
         $this->userAuctionTable = $userAuctionTable;
-
+        $this->lot_auctionTable = $lot_auctionTable;
+        $this->lotTable = $lotTable;
     }
 
     public function home()
@@ -56,7 +59,8 @@ class UserController
             $loggedoutSuccess = true;
         }
 
-        $auctioncats = $this->auction_catTable->findAll();
+        $auctioncats = $this->lot_auctionTable->findAllDistinctAuctions();
+
         $auction_cat_bids = $this->user_bid_categoryTable->findAll();
 
         return [
@@ -79,16 +83,16 @@ class UserController
         $auctioncats = $this->auction_catTable->findAll();
 
         // Search for categories
-        $categoryResults = $this->categoryTable->findAll();
+        $categories = $this->categoryTable->findAll();
 
         // Search for auctions
-        $auctionResults = $this->auction_catTable->searchAuction($searchTerm);
+        $auctionResults = $this->lot_auctionTable->searchAuctions($searchTerm);
 
         return [
             'template' => 'usersearch.html.php',
             'variables' => [
                 'searchTerm' => $searchTerm,
-                'categoryResults' => $categoryResults,
+                'categories' => $categories,
                 'auctionResults' => $auctionResults,
                 'auction_cat_bids' => $auction_cat_bids,
                 'auctioncats' => $auctioncats,
@@ -104,7 +108,7 @@ class UserController
 
         // Assuming you have a method to get auctions by category ID in your auction table
         $filteredAuctions = $this->auctionTable->getAuctionsByCategoryId($catId);
-        $auctioncats = $this->auction_catTable->findAll();
+        $auctions = $this->lot_auctionTable->findAllDistinctAuctions();
 
 
         // Assuming you have a method to get all categories in your category table
@@ -115,25 +119,22 @@ class UserController
             'variables' => [
                 'filteredAuctions' => $filteredAuctions,
                 'categories' => $categories,
-                'auctioncats' => $auctioncats
+                'auctions' => $auctions
             ],
             'title' => 'Filtered Auctions',
         ];
     }
-
-
-
 
     public function catalogue(): array
     {
 
         $auction_cat_bids = $this->user_bid_categoryTable->findAll();
         $categories = $this->categoryTable->findAll();
-        $auctioncats = $this->auction_catTable->findAll();
+        $auctioncats = $this->lot_auctionTable->findAllDistinctAuctions();
 
         $sortOrder = isset($_GET['sort']) ? $_GET['sort'] : 'asc'; // Default sorting order is ascending
 
-        $auctions = $this->auctionTable->findAllSorting($sortOrder);
+        $auctions = $this->lot_auctionTable->findAllDistinctAuctions($sortOrder);
 
 
         return [
@@ -150,16 +151,44 @@ class UserController
         ];
     }
 
+    public function userviewlots(): array
+    {
+        $aucId = $_GET['aucId']; // Assuming aucId is passed in the query string
+
+        // Fetch the details of the selected auction
+        $auctions = $this->auctionTable->find('aucId', $aucId)[0];
+        $auctioncats = $this->lot_auctionTable->findAllDistinctAuctions();
+
+        $sortOrder = isset($_GET['sort']) ? $_GET['sort'] : 'asc'; // Default sorting order is ascending
+
+        // Fetch lots associated with the selected auction, sorted based on the selected criteria
+        $lots = $this->lot_auctionTable->findAllSort($sortOrder, $aucId);
+
+
+        return [
+            'template' => 'userviewlots.html.php',
+            'variables' => [
+                'aucId' => $aucId,
+                'lots' => $lots,
+                'auctioncats' => $auctioncats,
+                'auctions' => $auctions,
+                'sortOrder' => $sortOrder
+            ],
+            'title' => 'Lots for Auction - ' . $auctions['title'] // Include auction title in the page title
+        ];
+    }
+
+
+
     public function bidpage(): array
     {
 
-        $auction = $this->auctionTable->find('aucId', $_GET['aucId'])[0];
-        $auctions = $this->auction_catTable->find('aucId', $_GET['aucId'])[0];
-        $auction_users = $this->auction_userTable->find('auctionId', $_GET['aucId'])[0];
-        $bidders = $this->user_bid_categoryTable->getBiddersWithHighestBid($_GET['aucId']);
+        $auction = $this->lotTable->find('lotId', $_GET['lotId'])[0];
+        $auctions = $this->lot_auctionTable->find('lotId', $_GET['lotId'])[0];
+        $bidders = $this->user_bid_categoryTable->getBiddersWithHighestBid($_GET['lotId']);
 
         // Get the highest bid amount
-        $highestBid = $this->biddingTable->getHighestBidAmount($_GET['aucId']);
+        $highestBid = $this->biddingTable->getHighestBidAmount($_GET['lotId']);
         $highestBid = $highestBid ? $highestBid : 0;
 
         return [
@@ -167,7 +196,6 @@ class UserController
             'variables' => [
                 'auction' => $auction,
                 'auctions' => $auctions,
-                'auction_users' => $auction_users,
                 'bidders' => $bidders,
                 'highestBid' => $highestBid,
             ],
@@ -182,7 +210,7 @@ class UserController
         $this->checkLogin();
 
         $bidAmount = isset($_POST['bidamount']) ? floatval($_POST['bidamount']) : 0.0;
-        $auctionId = isset($_POST['auctionId']) ? intval($_POST['auctionId']) : 0;
+        $lotId = isset($_POST['lotId']) ? intval($_POST['lotId']) : 0;
         // Check if the user is logged in
         if (!isset($_SESSION['userDetails']['userId'])) {
             // Redirect to login page or show an error message
@@ -193,14 +221,14 @@ class UserController
         $userId = $_SESSION['userDetails']['userId'];
 
         // Get the highest bid amount for the auction
-        $highestBid = $this->biddingTable->getHighestBidAmount($auctionId);
+        $highestBid = $this->biddingTable->getHighestBidAmount($lotId);
 
         // Check if bid amount is greater than the highest bid
         if ($bidAmount > $highestBid) {
             // Insert the bid into the database
             $values = [
                 'bidamount' => $bidAmount,
-                'auctionId' => $auctionId,
+                'lotId' => $lotId,
                 'userId' => $userId,
                 'datecreate' => date('Y-m-d H:i'),
                 'status' => 'Ongoing'
@@ -256,7 +284,6 @@ class UserController
                             'description' => $_POST['description'],
                             'endDate' => $_POST['endDate'],
                             'catId' => $_POST['catId'],
-                            'price' => $_POST['price'],
                             'img' => $_FILES["auct_pic"]["name"],
                             'datecreate' => date('Y-m-d H:i'),
                             'status' => 'Upcoming',
@@ -286,6 +313,48 @@ class UserController
         ];
     }
 
+    public function edituser(): array
+    {
+        $userId = isset($_GET['userId']) ? $_GET['userId'] : null;
+
+        if (isset($_POST['submit'])) {
+            $values = [
+                'userId' => $_POST['userId'],  // Use the value from the URL, not from $_POST
+                'firstname' => $_POST['firstname'],
+                'lastname' => $_POST['lastname'],
+                'email' => $_POST['email'],
+                'number' => $_POST['number'],
+                'address' => $_POST['address'],
+                'checkAdmin' => $_SESSION['userDetails']["checkAdmin"]
+            ];
+
+            $_SESSION['userDetails'] = [
+                'userId' => $_POST['userId'],  // Use the value from the URL, not from $_POST
+                'firstname' => $_POST['firstname'],
+                'lastname' => $_POST['lastname'],
+                'email' => $_POST['email'],
+                'number' => $_POST['number'],
+                'address' => $_POST['address'],
+                'checkAdmin' => $_SESSION['userDetails']["checkAdmin"]
+            ];
+
+            $this->userTable->update($values);
+            header('location: /user/home');
+            exit();
+        }
+
+        $user = $this->userTable->find('userId', $userId)[0];
+
+        return [
+            'template' => 'usereditprofile.html.php',
+            'variables' => [
+                'user' => $user
+            ],
+            'title' => 'Edit Account'
+        ];
+    }
+
+
 
     public function thankyou(): array
     {
@@ -295,6 +364,16 @@ class UserController
             'template' => 'userthankyou.html.php',
             'variables' => [],
             'title' => 'Thank you for Bidding...'
+        ];
+    }
+
+    public function contact(): array
+    {
+
+        return [
+            'template' => 'usercontact.html.php',
+            'variables' => [],
+            'title' => 'Contact Us...'
         ];
     }
     public function auctionThankyou(): array

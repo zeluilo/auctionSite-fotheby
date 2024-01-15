@@ -14,10 +14,10 @@
                             <th scope="col">#</th>
                             <th scope="col">Full Name</th>
                             <th scope="col">Email</th>
+                            <th scope="col">Auction</th>
                             <th scope="col">Auction Item</th>
                             <th scope="col">Bid Amount</th>
                             <th scope="col">Date Bidded</th>
-                            <th scope="col">Auction Status</th>
                             <th scope="col">UserType</th>
                             <th scope="col">Actions</th>
 
@@ -31,9 +31,9 @@
                                     <td><?php echo htmlspecialchars($bidder['firstname'] . ' ' . $bidder['lastname'], ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars($bidder['email'], ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars($bidder['title'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars($bidder['lotname'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo '$' . htmlspecialchars($bidder['bidamount'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($bidder['bidDateCreate'])) ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars($bidder['bidStatus'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars($bidder['checkAdmin'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <a href="edituser?userId=<?php echo $bidder['UserId'] ?>"><i class="fas fa-eye"></i></a>

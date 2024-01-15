@@ -13,65 +13,144 @@ require '../database.php';
         </div>
     </div>
 </div>
-
 <div class="site-section">
+
     <div class="container">
 
         <?php require 'filterHeading.html.php'; ?>
 
-        <div class="row mb-8">
+        <div class="row mb-10">
             <table class="table">
+                <h5>Ongoing Auctions</h5>
                 <tbody>
-                    <?php foreach ($auctions as $auction) : ?>
-                        <?php
-                        $date = strtotime($auction['endDate']);
-                        $left_time = $date - time();
+                    <!-- #region -->
+                    <?php
+                    $numColumns = 3; // Number of columns
+                    $rowCount = 0;   // Initialize row count
 
-                        $day = floor($left_time / (60 * 60 * 24));
-                        $left_time %= (60 * 60 * 24);
+                    foreach ($auctions as $auction) :
+                        $startDate = strtotime($auction['startDate']);
+                        $currentTime = time();
 
-                        $hour = floor($left_time / (60 * 60));  // Fix: Correct the division here
-                        $left_time %= (60 * 60);
+                        if ($currentTime >= $startDate) { // Auction has started
+                            $date = strtotime($auction['endDate']);
+                            $left_time = $date - $currentTime;
 
-                        $minute = floor($left_time / 60);
-                        $left_time %= 60;
+                            $day = floor($left_time / (60 * 60 * 24));
+                            $left_time %= (60 * 60 * 24);
 
-                        if ($day > 0) {
-                            $showTime = "$day ds $hour hrs $minute ms";
-                        } elseif ($hour > 0) {
-                            $showTime = "$hour hrs $minute ms";
-                        } elseif ($minute > 0) {
-                            $showTime = "$minute ms";
-                        } else {
-                            $showTime = 'Auction Expired';
-                        }
+                            $hour = floor($left_time / (60 * 60));
+                            $left_time %= (60 * 60);
 
-                        $isAuctionExpired = $left_time <= 0;
+                            $minute = floor($left_time / 60);
+                            $left_time %= 60;
 
-                        ?>
-                        <tr>
+                            if ($day > 0) {
+                                $showTime = "$day ds $hour hrs $minute ms";
+                            } elseif ($hour > 0) {
+                                $showTime = "$hour hrs $minute ms";
+                            } elseif ($minute > 0) {
+                                $showTime = "$minute ms";
+                            } else {
+                                $showTime = 'Auction Expired';
+                            }
+
+                            $isAuctionExpired = $left_time <= 0;
+
+                            // Open a new row for the first column
+                            if ($rowCount % $numColumns == 0) {
+                                echo '<tr>';
+                            }
+                    ?>
                             <td>
-                                <img width="150px" height="150" src="<?php echo '../img/auctions/' . $auction['img']; ?>" alt="Auction Image">
+                                <!-- Display ongoing auction details here -->
+                                <img width="150px" height="150" src="<?php echo '../img/auctions/' . $auction['auctionimage']; ?>" alt="Auction Image"><br>
+                                <strong>Auction Name: </strong> <?php echo htmlspecialchars($auction['title'], ENT_QUOTES, 'UTF-8'); ?><br>
+                                <strong>Category: </strong> <?php echo htmlspecialchars($auction['catname'], ENT_QUOTES, 'UTF-8'); ?><br>
+                                <strong>Start Date: </strong> <?php echo isset($auction['startDate']) ? date('Y-m-d', strtotime($auction['startDate'])) : ''; ?>
+                                <p><strong>End Date: </strong> <?php echo isset($auction['endDate']) ? date('Y-m-d', strtotime($auction['endDate'])) : ''; ?></p>
 
-                            </td>
-                            <td>
-                                <p><strong>Auction Item: </strong> <?php echo htmlspecialchars($auction['title'], ENT_QUOTES, 'UTF-8'); ?></p>
-                                <p><strong>Item Description: </strong><?php echo limitWords(htmlspecialchars($auction['description'], ENT_QUOTES, 'UTF-8'), 30); ?></p>
-                                <p><strong>Estimated Price: </strong><?php echo '£' . limitWords(htmlspecialchars($auction['price'], ENT_QUOTES, 'UTF-8'), 30); ?></p>
-                            </td>
-                            <td>
-                                <p>Bidding Ends:<br><strong class="text-black"><?php echo $showTime ?></strong></p>
                                 <?php if (!$isAuctionExpired) : ?>
-                                    <p><a href="/user/bidpage?aucId=<?php echo $auction['aucId'] ?>"><button class="btn btn-primary" type="submit">Place Bid</button></a></p>
+                                    <p><a href="/user/userviewlots?aucId=<?php echo $auction['aucId'] ?>"><button class="btn btn-primary" type="submit">View Lots</button></a></p>
                                 <?php else : ?>
-                                    <p><button class="btn btn-primary" type="submit" disabled>Bid Expired</button></p>
+                                    <p><button class="btn btn-primary" type="submit" disabled>Auction Ended</button></p>
                                     <?php endif; ?>&nbsp;
                             </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    <?php if (count($auctions) === 0) : ?>
+                        <?php
+                            // Close the row after the last column
+                            if ($rowCount % $numColumns == $numColumns - 1) {
+                                echo '</tr>';
+                            }
+
+                            // Increment the row count
+                            $rowCount++;
+                        }
+                    endforeach;
+
+                    // If the last row is not complete, close it
+                    if ($rowCount % $numColumns != 0) {
+                        echo '</tr>';
+                    }
+
+                    if ($rowCount == 0) :
+                        ?>
                         <tr>
-                            <td colspan="6">No Auctioned Items</td>
+                            <td colspan="<?php echo $numColumns; ?>">No Ongoing Auctions</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mb-10">
+            <table class="table">
+                <h5>Upcoming Auctions</h5>
+                <tbody>
+                    <!-- #region -->
+                    <?php
+                    $numColumns = 3; // Number of columns
+                    $rowCount = 0;   // Initialize row count
+
+                    foreach ($auctions as $auction) :
+                        $startDate = strtotime($auction['startDate']);
+                        $currentTime = time();
+
+                        if ($currentTime < $startDate) { // Auction hasn't started yet
+                            // Open a new row for the first column
+                            if ($rowCount % $numColumns == 0) {
+                                echo '<tr>';
+                            }
+                    ?>
+                            <td>
+                                <!-- Display upcoming auction details here -->
+                                <img width="150px" height="150" src="<?php echo '../img/auctions/' . $auction['auctionimage']; ?>" alt="Auction Image"><br>
+                                <strong>Auction Name: </strong> <?php echo htmlspecialchars($auction['title'], ENT_QUOTES, 'UTF-8'); ?><br>
+                                <strong>Category: </strong> <?php echo htmlspecialchars($auction['catname'], ENT_QUOTES, 'UTF-8'); ?><br>
+                                <strong>Start Date: </strong> <?php echo isset($auction['startDate']) ? date('Y-m-d', strtotime($auction['startDate'])) : ''; ?>
+                                <p><strong>End Date: </strong> <?php echo isset($auction['endDate']) ? date('Y-m-d', strtotime($auction['endDate'])) : ''; ?></p>
+
+                                <!-- Add any additional details or buttons for upcoming auctions here -->
+                            </td>
+                        <?php
+                            // Close the row after the last column
+                            if ($rowCount % $numColumns == $numColumns - 1) {
+                                echo '</tr>';
+                            }
+
+                            // Increment the row count
+                            $rowCount++;
+                        }
+                    endforeach;
+
+                    // If the last row is not complete, close it
+                    if ($rowCount % $numColumns != 0) {
+                        echo '</tr>';
+                    }
+
+                    if ($rowCount == 0) :
+                        ?>
+                        <tr>
+                            <td colspan="<?php echo $numColumns; ?>">No Upcoming Auctions</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -79,46 +158,61 @@ require '../database.php';
         </div>
     </div>
 
+
+
     <?php require 'filterOptions.html.php'; ?>
 
     <div class="site-section">
-        <div class="container">
-            <div class="row mb-4">
-                <div class="col-md-7 mb-5 text-center mx-auto">
-                    <span class="caption">Auctions</span>
-                    <h2 class="text-black">Current <strong>Auctions</strong></h2>
-                </div>
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-7 mb-5 text-center mx-auto">
+                <span class="caption">Auctions</span>
+                <h2 class="text-black">Current <strong>Auctions</strong></h2>
             </div>
-            <div class="row auctions-entry">
-                <?php
-                $auctionCounter = 0; // Counter to track the number of auctions displayed
-                foreach ($auctioncats as $auction) :
+        </div>
+        <div class="row auctions-entry">
+            <?php
+            $auctionCounter = 0; // Counter to track the number of auctions displayed
+            foreach ($auctioncats as $auction) :
+                $startDate = strtotime($auction['startDate']);
+                $currentTime = time();
+
+                // Check if the auction has started (start date has passed)
+                if ($currentTime >= $startDate) {
                     if ($auctionCounter >= 4) {
                         break; // Exit the loop if 4 auctions have been displayed
                     }
-                ?>
+            ?>
                     <div class="col-7 col-md-3">
                         <div class="item">
                             <div>
-                                <strong class="price"><?php echo '$' . $auction['price'] ?></strong>
-                                <a href="item-single.html"><img width="150px" src="<?php echo '../img/auctions/' . $auction['img']; ?>" alt="Image" class="img-fluid"></a>
+                                <a href="item-single.html"><img width="150px" src="<?php echo '../img/auctions/' . $auction['auctionimage']; ?>" alt="Image" class="img-fluid"></a>
                             </div>
                             <div class="p-4">
                                 <h3><a href="item-single.html"><?php echo htmlspecialchars($auction['title'], ENT_QUOTES, 'UTF-8'); ?></a></h3>
                                 <div class="d-flex mb-2">
                                     <span><?php echo htmlspecialchars($auction['catname'], ENT_QUOTES, 'UTF-8'); ?></span>
                                 </div>
-                                <a href="bidpage?aucId=<?php echo $auction['aucId'] ?>" class="btn btn-bid">Submit a Bid</a>
+                                <a href="userviewlots?aucId=<?php echo $auction['aucId'] ?>" class="btn btn-bid">View Lots</a>
                             </div>
                         </div>
                     </div>
-                <?php
+            <?php
                     $auctionCounter++;
-                endforeach;
-                ?>
-            </div>
+                }
+            endforeach;
+
+            // Display a message if no auctions have started
+            if ($auctionCounter == 0) :
+            ?>
+                <div class="col-md-12 text-center">
+                    <p>No current auctions available.</p>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
+</div>
+
 
 
     <?php

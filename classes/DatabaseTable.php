@@ -57,11 +57,11 @@ class DatabaseTable
         $stmt->execute($criteria);
     }
 
-    public function getHighestBidAmount($aucId): float
+    public function getHighestBidAmount($lotId): float
     {
-        $sql = "SELECT MAX(bidamount) as highestBid FROM bidding WHERE auctionId = :aucId";
+        $sql = "SELECT MAX(bidamount) as highestBid FROM bidding WHERE lotId = :lotId";
         $query = $this->pdo->prepare($sql);
-        $query->bindParam(':aucId', $aucId, PDO::PARAM_INT);
+        $query->bindParam(':lotId', $lotId, PDO::PARAM_INT);
 
         if ($query->execute()) {
             $result = $query->fetch(PDO::FETCH_OBJ);
@@ -73,18 +73,18 @@ class DatabaseTable
         }
     }
 
-    public function getBiddersWithHighestBid($auctionId)
+    public function getBiddersWithHighestBid($lotId)
     {
         $sql = "SELECT ubc.*, u.firstname, u.lastname, MAX(b.bidamount) AS highestBid
                 FROM user_bid_category ubc
                 JOIN users u ON ubc.UserId = u.userId
-                LEFT JOIN bidding b ON ubc.UserId = b.UserId AND ubc.Auction_Id = b.auctionId
-                WHERE ubc.Auction_Id = :aucId
+                LEFT JOIN bidding b ON ubc.UserId = b.UserId AND ubc.Lot_Id = b.lotId
+                WHERE ubc.Lot_Id = :lotId
                 GROUP BY ubc.UserId
                 ORDER BY highestBid DESC";
 
         $query = $this->pdo->prepare($sql);
-        $query->bindParam(':aucId', $auctionId, PDO::PARAM_INT);
+        $query->bindParam(':lotId', $lotId, PDO::PARAM_INT);
 
         if ($query->execute()) {
             return $query->fetchAll(PDO::FETCH_ASSOC);
@@ -142,6 +142,19 @@ class DatabaseTable
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function searchAuctions($searchQuery)
+    {
+        // Assuming you are using PDO for database operations
+        $searchQuery = '%' . $searchQuery . '%'; // Add wildcard characters to search for partial matches
+
+        $sql = "SELECT DISTINCT aucId, auctionimage, catname, title, startDate, endDate FROM lot_auction WHERE title LIKE :searchQuery";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':searchQuery', $searchQuery, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function searchAuction($searchQuery)
     {
         // Assuming you are using PDO for database operations
@@ -155,9 +168,22 @@ class DatabaseTable
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function searchLot($searchQuery)
+    {
+        // Assuming you are using PDO for database operations
+        $searchQuery = '%' . $searchQuery . '%'; // Add wildcard characters to search for partial matches
+
+        $sql = "SELECT * FROM lot_auction WHERE lotname LIKE :searchQuery";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':searchQuery', $searchQuery, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getAuctionsByCategoryId($catId): array
     {
-        $sql = "SELECT * FROM auction WHERE catId = :catId";
+        $sql = "SELECT DISTINCT aucId, auctionimage, catname, title, startDate, endDate FROM lot_auction WHERE catId = :catId";
         $query = $this->pdo->prepare($sql);
         $query->bindParam(':catId', $catId, PDO::PARAM_INT);
         $query->execute();
@@ -169,31 +195,31 @@ class DatabaseTable
     {
         switch ($sortOrder) {
             case 'upcoming':
-                $sql = "SELECT * FROM auction ORDER BY datecreate DESC";
+                $sql = "SELECT * FROM lot_auction ORDER BY datecreate DESC";
                 break;
             case 'latest':
-                $sql = "SELECT * FROM auction ORDER BY endDate DESC";
+                $sql = "SELECT * FROM lot_auction ORDER BY endDate DESC";
                 break;
             case 'asc':
-                $sql = "SELECT * FROM auction ORDER BY title ASC";
+                $sql = "SELECT * FROM lot_auction ORDER BY title ASC";
                 break;
             case 'desc':
-                $sql = "SELECT * FROM auction ORDER BY title DESC";
+                $sql = "SELECT * FROM lot_auction ORDER BY title DESC";
                 break;
             case '0-350':
-                $sql = "SELECT * FROM auction WHERE price BETWEEN 0 AND 350 ORDER BY price ASC";
+                $sql = "SELECT * FROM lot_auction WHERE price BETWEEN 0 AND 350 ORDER BY price ASC";
                 break;
             case '350-650':
-                $sql = "SELECT * FROM auction WHERE price BETWEEN 350 AND 650 ORDER BY price ASC";
+                $sql = "SELECT * FROM lot_auction WHERE price BETWEEN 350 AND 650 ORDER BY price ASC";
                 break;
             case '650-1000':
-                $sql = "SELECT * FROM auction WHERE price BETWEEN 650 AND 1000 ORDER BY price ASC";
+                $sql = "SELECT * FROM lot_auction WHERE price BETWEEN 650 AND 1000 ORDER BY price ASC";
                 break;
             case '1000':
-                $sql = "SELECT * FROM auction WHERE price >= 1000 ORDER BY price ASC";
+                $sql = "SELECT * FROM lot_auction WHERE price >= 1000 ORDER BY price ASC";
                 break;
             default:
-                $sql = "SELECT * FROM auction ORDER BY endDate ASC"; // Default to 'upcoming'
+                $sql = "SELECT * FROM lot_auction ORDER BY endDate ASC"; // Default to 'upcoming'
                 break;
         }
 
@@ -202,6 +228,46 @@ class DatabaseTable
 
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function findAllSort($sortOrder, $aucId): array
+{
+    switch ($sortOrder) {
+        case 'upcoming':
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId ORDER BY datecreate DESC";
+            break;
+        case 'lates':
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId ORDER BY endDate DESC";
+            break;
+        case 'asc':
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId ORDER BY lotname ASC";
+            break;
+        case 'desc':
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId ORDER BY lotname DESC";
+            break;
+        case '0-350':
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId AND price BETWEEN 0 AND 350 ORDER BY price ASC";
+            break;
+        case '350-650':
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId AND price BETWEEN 350 AND 650 ORDER BY price ASC";
+            break;
+        case '650-1000':
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId AND price BETWEEN 650 AND 1000 ORDER BY price ASC";
+            break;
+        case '1000':
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId AND price >= 1000 ORDER BY price ASC";
+            break;
+        default:
+            $sql = "SELECT * FROM lot_auction WHERE aucId = :aucId ORDER BY endDate ASC"; // Default to 'upcoming'
+            break;
+    }
+
+    $query = $this->pdo->prepare($sql);
+    $query->bindParam(':aucId', $aucId, PDO::PARAM_INT);
+    $query->execute();
+
+    return $query->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
 
     public function join($query, $values)
@@ -229,5 +295,25 @@ class DatabaseTable
 
         return $currentTime > $endTime;
     }
+
+    function getMaxLotNum() {
+        global $pdo; // Assuming $pdo is your database connection object
+        $stmt = $pdo->prepare("SELECT MAX(lotnum) AS max_lotnum FROM lot");
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        return $result['max_lotnum'] ?: 0; // Return 0 if there are no existing lot numbers
+    }
+
+    public function findAllDistinctAuctions(): array
+{
+    $sql = "SELECT DISTINCT aucId, auctionimage, catname, title, startDate, endDate FROM lot_auction";
+    
+    $query = $this->pdo->prepare($sql);
+    $query->execute();
+
+    return $query->fetchAll(PDO::FETCH_ASSOC);
+}
     
 }
+

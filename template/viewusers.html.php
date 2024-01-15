@@ -23,7 +23,7 @@
                     <tbody>
                         <?php $rowNum = 1; ?>
                         <?php foreach ($users as $user): ?>
-                            <?php if ($user['checkAdmin'] === 'USER'): ?>
+                            <?php if ($user['checkAdmin'] === 'USER' || $user['checkAdmin'] === 'SELLER'): ?>
                                 <tr>
                                     <td><?php echo $rowNum; ?></td>
                                     <td><?php echo htmlspecialchars($user['firstname'] . ' ' . $user['lastname'], ENT_QUOTES, 'UTF-8'); ?></td>

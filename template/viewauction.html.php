@@ -15,13 +15,13 @@
 
                                 </td>
                                 <td>
-                                    <p><strong>Auction Item: </strong> <?php echo htmlspecialchars($auction['title'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <p><strong>Auction Name: </strong> <?php echo htmlspecialchars($auction['title'], ENT_QUOTES, 'UTF-8'); ?></p>
                                     <p><strong>Item Category: </strong> <?php echo htmlspecialchars($auction['catname'], ENT_QUOTES, 'UTF-8'); ?></p>
-                                    <p><strong>Item Description: </strong><?php echo limitWords(htmlspecialchars($auction['description'], ENT_QUOTES, 'UTF-8'), 10); ?></p>
-                                    <p><strong>Estimated Price: </strong><?php echo '£' . limitWords(htmlspecialchars($auction['price'], ENT_QUOTES, 'UTF-8'), 30); ?></p>
+                                    <p><strong>Auction Event Description: </strong><?php echo limitWords(htmlspecialchars($auction['description'], ENT_QUOTES, 'UTF-8'), 10); ?></p>
                                 </td>
 
                                 <td>
+                                    <p><strong>Starts:</strong> <?php echo isset($auction['startDate']) ? date('Y-m-d', strtotime($auction['startDate'])) : ''; ?></p>
                                     <p><strong>Ends:</strong> <?php echo isset($auction['endDate']) ? date('Y-m-d', strtotime($auction['endDate'])) : ''; ?></p>
                                     <a href="editauction?aucId=<?php echo $auction['aucId'] ?>">Edit Item Info</a>
                                     &nbsp;

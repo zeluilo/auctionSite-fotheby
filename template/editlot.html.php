@@ -55,10 +55,12 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-xl-12">
-                                                <div class="form-group">
-                                                    <label>Item Description</label>
-                                                    <textarea class="form-control" name="lotdesc" required><?php echo $lot['lotdesc']; ?></textarea>
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="form-group">
+                                                        <label>Item Description</label>
+                                                        <textarea class="form-control" name="lotdesc" required><?php echo $lot['lotdesc']; ?></textarea>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="row">
